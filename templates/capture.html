@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Recognition System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a202c;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            background: linear-gradient(to right, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+        .info-box {
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .action-card {
+            background: linear-gradient(to right, #6366f1, #8b5cf6, #d946ef);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .action-card:hover {
+            transform: scale(1.02);
+        }
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            background-color: rgba(139, 92, 246, 0.5);
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+        .action-button:hover {
+            background-color: rgba(139, 92, 246, 0.75);
+        }
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin-top: 2rem;
+            border: none;
+            border-radius: 0.25rem;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+        }
+        .alert-warning {
+            background-color: #fcd34d;
+            color: #92400e;
+        }
+        .alert-success {
+            background-color: #10b981;
+            color: white;
+        }
+        .learn-more {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            color: #a78bfa;
+            text-decoration: none;
+        }
+        .learn-more:hover {
+            text-decoration: underline;
+        }
+        #imagePreview {
+            max-width: 100%;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Recognition System</h1>
+        
+        <div class="info-box">
+            <h2>How it works</h2>
+            <p>Upload an image or capture one with your webcam. Our AI will analyze the image and verify your identity.</p>
+        </div>
+
+        <div class="action-card">
+            <h3>Upload Image</h3>
+            <form action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
+                <label for="imageInput" class="action-button">
+                    <i class="fas fa-upload" style="margin-right: 0.5rem;"></i>
+                    Choose File
+                </label>
+                <img id="imagePreview" style="display: none;">
+                <button type="submit" class="submit-button" id="uploadButton" disabled>
+                    Upload and Verify voter Identity
+                </button>
+            </form>
+        </div>
+
+        <div class="action-card">
+            <h3>Capture with Webcam</h3>
+            <a href="{{ url_for('webcam') }}" class="action-button">
+                <i class="fas fa-camera" style="margin-right: 0.5rem;"></i>
+                Open Webcam
+            </a>
+        </div>
+        
+        <a href="{{ url_for('logout') }}" class="action-button" style="background-color: #f87171;">
+            <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
+            Logout
+        </a>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert {% if 'success' in messages %}alert-success{% else %}alert-warning{% endif %}">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <a href="#" class="learn-more">
+            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
+            Learn more about our image recognition technology
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadButton = document.getElementById('uploadButton');
+
+            imageInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        uploadButton.disabled = false;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

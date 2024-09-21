@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result - Image Recognition System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between">
+                <div class="flex space-x-7">
+                    <div>
+                        <a href="#" class="flex items-center py-4 px-2">
+                            <span class="font-semibold text-gray-500 text-lg">Image Recognition System</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('logout') }}" class="py-2 px-2 font-medium text-gray-500 rounded hover:bg-gray-100 hover:text-gray-900 transition duration-300">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">VERIFICTION STATUS </h2>
+        
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="md:flex">
+                <!-- Display the uploaded image -->
+                <div class="md:flex-shrink-0">
+                    <img class="h-48 w-full object-cover md:w-48" src="/static/{{ file_path.split('/')[-1] }}" alt="Uploaded Image">
+                </div>
+
+                <!-- Prediction Results -->
+                <div class="p-8">
+                    {% if prediction['predictions'] %}
+                        {% for pred in prediction['predictions'] %}
+                            <div class="mb-4 pb-4 border-b border-gray-200 last:border-b-0">
+                                <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">Identified </div>
+                                <h3 class="block mt-1 text-lg leading-tight font-medium text-black">{{ pred['class'] }}</h3>
+                               
+
+                                <div class="mt-4">
+                                    <h4 class="text-sm font-semibold text-gray-700">Metrics</h4>
+                                    <ul class="list-disc list-inside text-sm text-gray-600">
+                                        <li>X: {{ "%.2f"|format(pred['x']) }}</li>
+                                        <li>Y: {{ "%.2f"|format(pred['y']) }}</li>
+                                        <li>Width: {{ "%.2f"|format(pred['width']) }}</li>
+                                        <li>Height: {{ "%.2f"|format(pred['height']) }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-gray-500">No unable to identify make sure you are a registered voter</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Message -->
+        <div class="mt-4 text-center">
+            <p class="text-xl {{ 'text-red-500' if not is_verified else 'text-green-500' }}">{{ message }}</p>
+        </div>
+
+        <!-- Buttons for Home and Verification -->
+        <div class="mt-8 flex justify-center space-x-4">
+            {% if is_verified %}
+            <a href="{{ url_for('home') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                <i class="fas fa-home mr-2"></i>CAST VOTE
+            </a>
+            {% endif %}
+            <a href="{{ url_for('capture') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                <i class="fas fa-redo mr-2"></i>Verify Again
+            </a>
+        </div>
+    </div>
+</body>
+</html>

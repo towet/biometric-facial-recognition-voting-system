@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detection Results</title>
+</head>
+<body>
+    <h2>Detection Results</h2>
+    <img src="{{ image_path }}" alt="Detected Object" style="max-width: 100%;">
+    <p>Detected Class: {{ class_name }}</p>
+    <p>Confidence: {{ confidence * 100 }}%</p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <a href="{{ url_for('capture') }}">Try Another Image</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Voting Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a202c;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            background: linear-gradient(to right, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+        .info-box {
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .voting-card {
+            background: linear-gradient(to right, #6366f1, #8b5cf6, #d946ef);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .voting-card:hover {
+            transform: scale(1.02);
+        }
+        .candidate-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            background-color: rgba(139, 92, 246, 0.5);
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .candidate-button:hover {
+            background-color: rgba(139, 92, 246, 0.75);
+        }
+        .candidate-button.selected {
+            background-color: white;
+            color: #6366f1;
+            font-weight: bold;
+        }
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin-top: 2rem;
+            border: none;
+            border-radius: 0.25rem;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+        }
+        .alert-warning {
+            background-color: #fcd34d;
+            color: #92400e;
+        }
+        .alert-success {
+            background-color: #10b981;
+            color: white;
+        }
+        .learn-more {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            color: #a78bfa;
+            text-decoration: none;
+        }
+        .learn-more:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Decentralized Voting Platform</h1>
+        
+        <div class="info-box">
+            <h2>How it works</h2>
+            <p>Select your preferred candidate for each position. Your votes will be securely stored on the blockchain, ensuring transparency and immutability.</p>
+        </div>
+
+        <div id="votingArea">
+            <!-- Voting cards will be inserted here by JavaScript -->
+        </div>
+        
+        <button id="submitButton" class="submit-button" disabled>Please vote for all positions</button>
+        
+        <div id="alert" class="alert" style="display: none;"></div>
+
+        <a href="#" class="learn-more">
+            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
+            Learn more about blockchain voting
+        </a>
+    </div>
+
+    <script>
+        const positions = [
+            { id: 1, title: 'Kubsa Chairperson', candidates: ['John wayne', 'Jane wangari', 'Mike siema'] },
+            { id: 2, title: 'Non resident', candidates: ['Sarah mwaniki', 'Tom Wilson', 'Emily Davis'] },
+            { id: 3, title: 'Secritary general', candidates: ['David mwaura', 'Lisa Chen khaliya', 'Robert alayiTaylor'] },
+        ];
+
+        let votes = {};
+
+        function createVotingCards() {
+            const votingArea = document.getElementById('votingArea');
+            positions.forEach(position => {
+                const card = document.createElement('div');
+                card.className = 'voting-card';
+                card.innerHTML = `
+                    <h3>${position.title}</h3>
+                    ${position.candidates.map(candidate => `
+                        <button class="candidate-button" data-position="${position.id}" data-candidate="${candidate}">
+                            <i class="fas fa-user" style="margin-right: 0.5rem;"></i>
+                            ${candidate}
+                        </button>
+                    `).join('')}
+                `;
+                votingArea.appendChild(card);
+            });
+        }
+
+        function handleVote(event) {
+            if (event.target.classList.contains('candidate-button')) {
+                const positionId = event.target.dataset.position;
+                const candidate = event.target.dataset.candidate;
+                votes[positionId] = candidate;
+
+                // Update button styles
+                document.querySelectorAll(`[data-position="${positionId}"]`).forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                event.target.classList.add('selected');
+
+                updateSubmitButton();
+            }
+        }
+
+        function updateSubmitButton() {
+            const submitButton = document.getElementById('submitButton');
+            if (Object.keys(votes).length === positions.length) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Confirm Votes on Blockchain';
+            } else {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Please vote for all positions';
+            }
+        }
+
+        function handleSubmit() {
+            if (Object.keys(votes).length === positions.length) {
+                // Here you would typically send the votes to your Flask backend
+                console.log('Votes submitted:', votes);
+                
+                const alert = document.getElementById('alert');
+                alert.className = 'alert alert-success';
+                alert.textContent = 'Your votes have been securely recorded on the blockchain. Thank you for participating in this decentralized decision-making process!';
+                alert.style.display = 'block';
+
+                document.getElementById('votingArea').style.display = 'none';
+                document.getElementById('submitButton').style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createVotingCards();
+            document.getElementById('votingArea').addEventListener('click', handleVote);
+            document.getElementById('submitButton').addEventListener('click', handleSubmit);
+        });
+    </script>
+</body>
+</html>
