@@ -91,17 +91,6 @@
             background-color: #10b981;
             color: white;
         }
-        .learn-more {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 2rem;
-            color: #a78bfa;
-            text-decoration: none;
-        }
-        .learn-more:hover {
-            text-decoration: underline;
-        }
         #imagePreview, #video {
             max-width: 100%;
             margin-top: 1rem;
@@ -156,24 +145,6 @@
                 </button>
             </form>
         </div>
-        
-        <a href="{{ url_for('logout') }}" class="action-button" style="background-color: #f87171;">
-            <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
-            Logout
-        </a>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert {% if 'success' in messages %}alert-success{% else %}alert-warning{% endif %}">
-                    {{ messages[0] }}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <a href="#" class="learn-more">
-            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
-            Learn more about our image recognition technology
-        </a>
     </div>
 
     <script>
@@ -240,7 +211,6 @@
             imageData.value = imageDataUrl;
             imageCapture = true;
 
-            // Stop the camera stream
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
@@ -248,14 +218,11 @@
 
         uploadForm.addEventListener('submit', (event) => {
             if (imageCapture) {
-                // If image was captured from camera, use the imageData field
                 imageInput.value = ''; // Clear the file input
             } else if (!imageInput.files.length) {
-                // If no file was selected and image wasn't captured, prevent submission
                 event.preventDefault();
                 alert("Please capture an image or upload a file before submitting.");
             }
-            // If a file was selected, it will be submitted automatically
         });
     });
     </script>
