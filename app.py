@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import cv2
 import os
 import json
 import base64
 from roboflow import Roboflow
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a real secret key
@@ -19,7 +20,7 @@ model = project.version(2).model
 
 @app.route('/')
 def index():
-    return render_template('main.html')  # Render main.html as the first page
+    return render_template('main.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -48,36 +49,26 @@ def upload_image():
         flash("Please log in first")
         return redirect(url_for('login'))
 
-    if 'image' not in request.files:
-        flash("No file selected")
-        return redirect(url_for('capture'))
+    if 'image' in request.files:
+        file = request.files['image']
+        if file.filename == '':
+            flash("No file selected")
+            return redirect(url_for('capture'))
 
-    file = request.files['image']
-    if file.filename == '':
-        flash("No file selected")
-        return redirect(url_for('capture'))
-
-    file_path = os.path.join('static', file.filename)
-    file.save(file_path)
-    return redirect(url_for('predict', file_path=file_path.replace('\\', '/')))
-
-@app.route('/webcam')
-def webcam():
-    if 'username' not in session:
-        flash("Please log in first")
-        return redirect(url_for('login'))
-
-    cap = cv2.VideoCapture(0)
-    ret, frame = cap.read()
-    if ret:
+        file_path = os.path.join('static', file.filename)
+        file.save(file_path)
+    elif 'image_data' in request.form:
+        image_data = request.form['image_data']
+        image_data = image_data.split(',')[1]  # Remove the "data:image/png;base64," part
+        image_array = np.frombuffer(base64.b64decode(image_data), np.uint8)
+        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
         file_path = os.path.join('static', 'captured_image.jpg')
-        cv2.imwrite(file_path, frame)
-        cap.release()
-        return redirect(url_for('predict', file_path=file_path.replace('\\', '/')))
+        cv2.imwrite(file_path, image)
     else:
-        cap.release()
-        flash("Failed to capture image")
+        flash("No image data received")
         return redirect(url_for('capture'))
+
+    return redirect(url_for('predict', file_path=file_path.replace('\\', '/')))
 
 @app.route('/predict/<path:file_path>')
 def predict(file_path):
@@ -114,21 +105,19 @@ def predict(file_path):
     _, buffer = cv2.imencode('.png', image)
     img_base64 = base64.b64encode(buffer).decode('utf-8')
 
-    # Check if the username matches the detected class
     if prediction['predictions']:
         detected_class = prediction['predictions'][0]['class']
-        session['last_detected_class'] = detected_class  # Store the detected class in session
+        session['last_detected_class'] = detected_class
         
-        # Check if username matches detected class
         if session['username'].lower() == detected_class.lower():
             is_verified = True
             message = "Verification complete. You can cast your vote."
         else:
             is_verified = False
-            message = "Authorisation denied you are not authorised to vote attempting to use someone else credential is a crime this voting session has been flagged as suspicious."
+            message = "Authorisation denied. You are not authorised to vote. Attempting to use someone else's credentials is a crime. This voting session has been flagged as suspicious."
     else:
         is_verified = False
-        session['last_detected_class'] = None  # No class detected
+        session['last_detected_class'] = None
         message = "No relevant object detected in the image."
 
     return render_template('results.html', 
