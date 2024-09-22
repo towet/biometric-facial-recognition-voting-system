@@ -102,10 +102,13 @@
         .learn-more:hover {
             text-decoration: underline;
         }
-        #imagePreview {
+        #imagePreview, #video {
             max-width: 100%;
             margin-top: 1rem;
             border-radius: 0.5rem;
+        }
+        #video {
+            display: none;
         }
     </style>
 </head>
@@ -115,30 +118,29 @@
         
         <div class="info-box">
             <h2>How it works</h2>
-            <p>Upload an image or capture one with your webcam. Our AI will analyze the image and verify your identity.</p>
+            <p>Upload an image or use your device's camera to verify your identity.</p>
         </div>
 
         <div class="action-card">
             <h3>Upload Image</h3>
-            <form action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
+                <input type="hidden" name="image_data" id="imageData">
                 <label for="imageInput" class="action-button">
                     <i class="fas fa-upload" style="margin-right: 0.5rem;"></i>
                     Choose File
                 </label>
                 <img id="imagePreview" style="display: none;">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+                <button type="button" id="captureButton" class="action-button" style="display: none;">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i>
+                    Capture Image
+                </button>
                 <button type="submit" class="submit-button" id="uploadButton" disabled>
-                    Upload and Verify voter Identity
+                    Upload and Verify Voter Identity
                 </button>
             </form>
-        </div>
-
-        <div class="action-card">
-            <h3>Capture with Webcam</h3>
-            <a href="{{ url_for('webcam') }}" class="action-button">
-                <i class="fas fa-camera" style="margin-right: 0.5rem;"></i>
-                Open Webcam
-            </a>
         </div>
         
         <a href="{{ url_for('logout') }}" class="action-button" style="background-color: #f87171;">
@@ -165,6 +167,24 @@
             const imageInput = document.getElementById('imageInput');
             const imagePreview = document.getElementById('imagePreview');
             const uploadButton = document.getElementById('uploadButton');
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const captureButton = document.getElementById('captureButton');
+            const uploadForm = document.getElementById('uploadForm');
+            const imageData = document.getElementById('imageData');
+
+            // Check if the device has a camera
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                    .then((stream) => {
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        captureButton.style.display = 'block';
+                    })
+                    .catch((err) => {
+                        console.error("Error accessing the camera:", err);
+                    });
+            }
 
             imageInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
@@ -173,12 +193,27 @@
                     reader.onload = (e) => {
                         imagePreview.src = e.target.result;
                         imagePreview.style.display = 'block';
+                        video.style.display = 'none';
+                        captureButton.style.display = 'none';
                         uploadButton.disabled = false;
                     };
                     reader.readAsDataURL(file);
                 }
             });
-        });
-    </script>
-</body>
-</html>
+
+            captureButton.addEventListener('click', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const imageDataUrl = canvas.toDataURL('image/jpeg');
+                imagePreview.src = imageDataUrl;
+                imagePreview.style.display = 'block';
+                video.style.display = 'none';
+                captureButton.style.display = 'none';
+                uploadButton.disabled = false;
+                imageData.value = imageDataUrl;
+            });
+
+            uploadForm.addEventListener('submit', (event) => {
+                if (imageData.value) {
+                    imageInput.
