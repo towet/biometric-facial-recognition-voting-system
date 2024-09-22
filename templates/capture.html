@@ -37,78 +37,22 @@
             border-radius: 0.5rem;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            transition: transform 0.3s ease;
-        }
-        .action-card:hover {
-            transform: scale(1.02);
         }
         .action-button {
             display: block;
             width: 100%;
             padding: 0.75rem 1rem;
             margin-top: 0.5rem;
-            border: none;
             border-radius: 0.25rem;
             background-color: rgba(139, 92, 246, 0.5);
             color: white;
             text-align: center;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            text-decoration: none;
-            font-size: 1rem;
         }
-        .action-button:hover {
-            background-color: rgba(139, 92, 246, 0.75);
-        }
-        .submit-button {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            margin-top: 2rem;
-            border: none;
-            border-radius: 0.25rem;
-            background: linear-gradient(to right, #10b981, #3b82f6);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.3s ease;
-        }
-        .submit-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .alert {
-            padding: 1rem;
-            border-radius: 0.25rem;
-            margin-top: 1rem;
-        }
-        .alert-warning {
-            background-color: #fcd34d;
-            color: #92400e;
-        }
-        .alert-success {
-            background-color: #10b981;
-            color: white;
-        }
-        .learn-more {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 2rem;
-            color: #a78bfa;
-            text-decoration: none;
-        }
-        .learn-more:hover {
-            text-decoration: underline;
-        }
-        #imagePreview, #video {
+        #imagePreview {
             max-width: 100%;
             margin-top: 1rem;
             border-radius: 0.5rem;
-        }
-        #video {
-            display: none;
         }
     </style>
 </head>
@@ -118,102 +62,44 @@
         
         <div class="info-box">
             <h2>How it works</h2>
-            <p>Upload an image or use your device's camera to verify your identity.</p>
+            <p>Capture your identity using your mobile device's camera or upload an image.</p>
         </div>
 
         <div class="action-card">
-            <h3>Upload Image</h3>
-            <form id="uploadForm" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
-                <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;">
-                <input type="hidden" name="image_data" id="imageData">
-                <label for="imageInput" class="action-button">
-                    <i class="fas fa-upload" style="margin-right: 0.5rem;"></i>
-                    Choose File
-                </label>
-                <img id="imagePreview" style="display: none;">
-                <video id="video" autoplay playsinline></video>
-                <canvas id="canvas" style="display:none;"></canvas>
-                <button type="button" id="captureButton" class="action-button" style="display: none;">
-                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i>
-                    Capture Image
-                </button>
-                <button type="submit" class="submit-button" id="uploadButton" disabled>
-                    Upload and Verify Voter Identity
-                </button>
-            </form>
+            <h3>Capture with Camera</h3>
+            <input type="file" accept="image/*" capture="environment" id="cameraInput">
+            <img id="imagePreview" style="display:none;">
         </div>
-        
+
+        <button id="uploadButton" class="action-button" disabled>Verify Identity</button>
+
         <a href="{{ url_for('logout') }}" class="action-button" style="background-color: #f87171;">
-            <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
-            Logout
+            <i class="fas fa-sign-out-alt"></i> Logout
         </a>
 
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert {% if 'success' in messages %}alert-success{% else %}alert-warning{% endif %}">
-                    {{ messages[0] }}
-                </div>
-            {% endif %}
+          {% if messages %}
+              <div class="alert {% if 'success' in messages %}alert-success{% else %}alert-warning{% endif %}">
+                  {{ messages[0] }}
+              </div>
+          {% endif %}
         {% endwith %}
-
-        <a href="#" class="learn-more">
-            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
-            Learn more about our image recognition technology
-        </a>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const imageInput = document.getElementById('imageInput');
-            const imagePreview = document.getElementById('imagePreview');
-            const uploadButton = document.getElementById('uploadButton');
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
-            const captureButton = document.getElementById('captureButton');
-            const uploadForm = document.getElementById('uploadForm');
-            const imageData = document.getElementById('imageData');
-
-            // Check if the device has a camera
-            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-                    .then((stream) => {
-                        video.srcObject = stream;
-                        video.style.display = 'block';
-                        captureButton.style.display = 'block';
-                    })
-                    .catch((err) => {
-                        console.error("Error accessing the camera:", err);
-                    });
+        document.getElementById('cameraInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('uploadButton').disabled = false; // Enable button after image is loaded
+                };
+                reader.readAsDataURL(file);
             }
-
-            imageInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        imagePreview.src = e.target.result;
-                        imagePreview.style.display = 'block';
-                        video.style.display = 'none';
-                        captureButton.style.display = 'none';
-                        uploadButton.disabled = false;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            captureButton.addEventListener('click', () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                const imageDataUrl = canvas.toDataURL('image/jpeg');
-                imagePreview.src = imageDataUrl;
-                imagePreview.style.display = 'block';
-                video.style.display = 'none';
-                captureButton.style.display = 'none';
-                uploadButton.disabled = false;
-                imageData.value = imageDataUrl;
-            });
-
-            uploadForm.addEventListener('submit', (event) => {
-                if (imageData.value) {
-                    imageInput.
+        });
+    </script>
+</body>
+</html>
