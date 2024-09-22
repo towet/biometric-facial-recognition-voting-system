@@ -76,7 +76,7 @@ def predict(file_path):
         flash("Please log in first")
         return redirect(url_for('login'))
 
-    prediction = model.predict(file_path, confidence=4.0, overlap=30).json()
+    prediction = model.predict(file_path, confidence=40, overlap=30).json()
     
     image = cv2.imread(file_path)
     if image is None:
