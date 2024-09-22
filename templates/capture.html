@@ -91,17 +91,6 @@
             background-color: #10b981;
             color: white;
         }
-        .learn-more {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 2rem;
-            color: #a78bfa;
-            text-decoration: none;
-        }
-        .learn-more:hover {
-            text-decoration: underline;
-        }
         #imagePreview, #video {
             max-width: 100%;
             margin-top: 1rem;
@@ -156,119 +145,86 @@
                 </button>
             </form>
         </div>
-        
-        <a href="{{ url_for('logout') }}" class="action-button" style="background-color: #f87171;">
-            <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
-            Logout
-        </a>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert {% if 'success' in messages %}alert-success{% else %}alert-warning{% endif %}">
-                    {{ messages[0] }}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <a href="#" class="learn-more">
-            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
-            Learn more about our image recognition technology
-        </a>
     </div>
-     <script>
-         document.addEventListener('DOMContentLoaded', () => {
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
-    const uploadButton = document.getElementById('uploadButton');
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const captureButton = document.getElementById('captureButton');
-    const cameraButton = document.getElementById('cameraButton');
-    const uploadForm = document.getElementById('uploadForm');
-    const imageData = document.getElementById('imageData');
 
-    let stream = null;
-    let imageCapture = false;
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadButton = document.getElementById('uploadButton');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('captureButton');
+        const cameraButton = document.getElementById('cameraButton');
+        const uploadForm = document.getElementById('uploadForm');
+        const imageData = document.getElementById('imageData');
 
-    cameraButton.addEventListener('click', () => {
-        if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-                .then((videoStream) => {
-                    stream = videoStream;
-                    video.srcObject = stream;
-                    video.style.display = 'block';
-                    imagePreview.style.display = 'none';
-                    captureButton.style.display = 'block';
-                    cameraButton.style.display = 'none';
-                })
-                .catch((err) => {
-                    console.error("Error accessing the camera:", err);
-                    alert("Unable to access the camera. Please check your permissions or try uploading an image instead.");
-                });
-        } else {
-            alert("Your device doesn't support camera access. Please try uploading an image instead.");
-        }
+        let stream = null;
+        let imageCapture = false;
+
+        cameraButton.addEventListener('click', () => {
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                    .then((videoStream) => {
+                        stream = videoStream;
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        imagePreview.style.display = 'none';
+                        captureButton.style.display = 'block';
+                        cameraButton.style.display = 'none';
+                    })
+                    .catch((err) => {
+                        console.error("Error accessing the camera:", err);
+                        alert("Unable to access the camera. Please check your permissions or try uploading an image instead.");
+                    });
+            } else {
+                alert("Your device doesn't support camera access. Please try uploading an image instead.");
+            }
+        });
+
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    video.style.display = 'none';
+                    captureButton.style.display = 'none';
+                    uploadButton.disabled = false;
+                    imageCapture = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        captureButton.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageDataUrl = canvas.toDataURL('image/jpeg');
+            imagePreview.src = imageDataUrl;
+            imagePreview.style.display = 'block';
+            video.style.display = 'none';
+            captureButton.style.display = 'none';
+            uploadButton.disabled = false;
+            imageData.value = imageDataUrl;
+            imageCapture = true;
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        uploadForm.addEventListener('submit', (event) => {
+            if (imageCapture) {
+                imageInput.value = ''; // Clear the file input
+            } else if (!imageInput.files.length) {
+                event.preventDefault();
+                alert("Please capture an image or upload a file before submitting.");
+            }
+        });
     });
-
-    imageInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imagePreview.src = e.target.result;
-                imagePreview.style.display = 'block';
-                video.style.display = 'none';
-                captureButton.style.display = 'none';
-                uploadButton.disabled = false;
-                imageCapture = false;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    captureButton.addEventListener('click', () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        const imageDataUrl = canvas.toDataURL('image/jpeg');
-        imagePreview.src = imageDataUrl;
-        imagePreview.style.display = 'block';
-        video.style.display = 'none';
-        captureButton.style.display = 'none';
-        uploadButton.disabled = false;
-        imageData.value = imageDataUrl;
-        imageCapture = true;
-
-        // Stop the camera stream
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-    });
-
-    uploadForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Prevent default form submission
-        
-        if (imageCapture) {
-            // If image was captured from camera, use the imageData field
-            fetch(uploadForm.action, {
-                method: 'POST',
-                body: new FormData(uploadForm)
-            }).then(response => {
-                if (response.ok) {
-                    window.location.href = response.url;
-                } else {
-                    alert("Error submitting the form");
-                }
-            });
-        } else if (imageInput.files.length > 0) {
-            // If a file was selected, submit the form
-            uploadForm.submit();
-        } else {
-            alert("Please capture an image or upload a file before submitting.");
-        }
-    });
-});
-     </script>
-    <script src="{{ url_for('static', filename='capture.js') }}"></script>
+    </script>
 </body>
 </html>
