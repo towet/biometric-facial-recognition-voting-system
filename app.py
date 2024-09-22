@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import cv2
 import os
 import json
@@ -49,21 +49,21 @@ def upload_image():
         flash("Please log in first")
         return redirect(url_for('login'))
 
-    if 'image' in request.files:
+    # Handling file upload
+    if 'image' in request.files and request.files['image'].filename != '':
         file = request.files['image']
-        if file.filename == '':
-            flash("No file selected")
-            return redirect(url_for('capture'))
-
         file_path = os.path.join('static', file.filename)
         file.save(file_path)
-    elif 'image_data' in request.form:
+    
+    # Handling image captured via camera (base64)
+    elif 'image_data' in request.form and request.form['image_data']:
         image_data = request.form['image_data']
         image_data = image_data.split(',')[1]  # Remove the "data:image/png;base64," part
         image_array = np.frombuffer(base64.b64decode(image_data), np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
         file_path = os.path.join('static', 'captured_image.jpg')
         cv2.imwrite(file_path, image)
+    
     else:
         flash("No image data received")
         return redirect(url_for('capture'))
@@ -76,7 +76,7 @@ def predict(file_path):
         flash("Please log in first")
         return redirect(url_for('login'))
 
-    prediction = model.predict(file_path, confidence=40, overlap=30).json()
+    prediction = model.predict(file_path, confidence=4.0, overlap=30).json()
     
     image = cv2.imread(file_path)
     if image is None:
@@ -90,10 +90,10 @@ def predict(file_path):
         box_width = int(pred['width'])
         box_height = int(pred['height'])
         
-        x1 = max(0, x - box_width//2)
-        y1 = max(0, y - box_height//2)
-        x2 = min(width, x + box_width//2)
-        y2 = min(height, y + box_height//2)
+        x1 = max(0, x - box_width // 2)
+        y1 = max(0, y - box_height // 2)
+        x2 = min(width, x + box_width // 2)
+        y2 = min(height, y + box_height // 2)
         
         cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
         label = f"{pred['class']}: {pred['confidence']:.2f}"
@@ -114,7 +114,7 @@ def predict(file_path):
             message = "Verification complete. You can cast your vote."
         else:
             is_verified = False
-            message = "Authorisation denied. You are not authorised to vote. Attempting to use someone else's credentials is a crime. This voting session has been flagged as suspicious."
+            message = "Authorisation denied. Attempting to use someone else's credentials is a crime."
     else:
         is_verified = False
         session['last_detected_class'] = None
@@ -138,7 +138,7 @@ def home():
         return redirect(url_for('capture'))
     
     if session['username'].lower() != session['last_detected_class'].lower():
-        flash("You are not authorized to access this page. The detected class does not match your username.")
+        flash("You are not authorized to access this page.")
         return redirect(url_for('capture'))
     
     return render_template('home.html')
