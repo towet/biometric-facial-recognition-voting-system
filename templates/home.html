@@ -26,7 +26,7 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 2rem;
         }
-        .info-box {
+        .info-box, .login-box {
             background-color: #2d3748;
             border-radius: 0.5rem;
             padding: 1rem;
@@ -63,7 +63,7 @@
             color: #6366f1;
             font-weight: bold;
         }
-        .submit-button {
+        .submit-button, .login-button {
             display: block;
             width: 100%;
             padding: 1rem;
@@ -105,29 +105,81 @@
         .learn-more:hover {
             text-decoration: underline;
         }
+        .login-form input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+            border: none;
+        }
+        .admin-view {
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .admin-view table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .admin-view th, .admin-view td {
+            border: 1px solid #4a5568;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        .admin-view th {
+            background-color: #4a5568;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Decentralized Voting Platform</h1>
         
-        <div class="info-box">
-            <h2>How it works</h2>
-            <p>Select your preferred candidate for each position. Your votes will be securely stored on the blockchain, ensuring transparency and immutability.</p>
+        <div id="loginArea" class="login-box">
+            <h2>Login</h2>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button id="loginButton" class="login-button">Login</button>
+            </div>
         </div>
 
-        <div id="votingArea">
-            <!-- Voting cards will be inserted here by JavaScript -->
-        </div>
-        
-        <button id="submitButton" class="submit-button" disabled>Please vote for all positions</button>
-        
-        <div id="alert" class="alert" style="display: none;"></div>
+        <div id="votingArea" style="display: none;">
+            <div class="info-box">
+                <h2>How it works</h2>
+                <p>Select your preferred candidate for each position. Your votes will be securely stored on the blockchain, ensuring transparency and immutability.</p>
+            </div>
 
-        <a href="#" class="learn-more">
-            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
-            Learn more about blockchain voting
-        </a>
+            <div id="positions">
+                <!-- Voting cards will be inserted here by JavaScript -->
+            </div>
+            
+            <button id="submitButton" class="submit-button" disabled>Please vote for all positions</button>
+            
+            <div id="alert" class="alert" style="display: none;"></div>
+
+            <a href="#" class="learn-more">
+                <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
+                Learn more about blockchain voting
+            </a>
+        </div>
+
+        <div id="adminArea" class="admin-view" style="display: none;">
+            <h2>Admin View - Votes Cast</h2>
+            <table id="votesTable">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Position</th>
+                        <th>Vote Cast</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Votes will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -138,9 +190,45 @@
         ];
 
         let votes = {};
+        let allVotes = [];
+        let currentUser = null;
+
+        const users = {
+            "stanley kianja": "kim",
+            "frank": "123",
+            "admin": "admin"
+        };
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (users[username] === password) {
+                currentUser = username;
+                document.getElementById('loginArea').style.display = 'none';
+                if (username === 'admin') {
+                    showAdminView();
+                } else {
+                    showVotingArea();
+                }
+            } else {
+                alert('Invalid username or password');
+            }
+        }
+
+        function showAdminView() {
+            document.getElementById('adminArea').style.display = 'block';
+            updateAdminView();
+        }
+
+        function showVotingArea() {
+            document.getElementById('votingArea').style.display = 'block';
+            createVotingCards();
+        }
 
         function createVotingCards() {
-            const votingArea = document.getElementById('votingArea');
+            const votingArea = document.getElementById('positions');
+            votingArea.innerHTML = ''; // Clear existing cards
             positions.forEach(position => {
                 const card = document.createElement('div');
                 card.className = 'voting-card';
@@ -186,22 +274,58 @@
 
         function handleSubmit() {
             if (Object.keys(votes).length === positions.length) {
-                // Here you would typically send the votes to your Flask backend
-                console.log('Votes submitted:', votes);
+                // Store votes
+                positions.forEach(position => {
+                    allVotes.push({
+                        username: currentUser,
+                        position: position.title,
+                        vote: votes[position.id]
+                    });
+                });
                 
                 const alert = document.getElementById('alert');
                 alert.className = 'alert alert-success';
                 alert.textContent = 'Your votes have been securely recorded on the blockchain. Thank you for participating in this decentralized decision-making process!';
                 alert.style.display = 'block';
 
-                document.getElementById('votingArea').style.display = 'none';
+                document.getElementById('positions').style.display = 'none';
                 document.getElementById('submitButton').style.display = 'none';
+
+                // Update admin view immediately after voting
+                updateAdminView();
+
+                // Reset votes for next user
+                votes = {};
+
+                // Show login area again for next user
+                setTimeout(() => {
+                    document.getElementById('loginArea').style.display = 'block';
+                    document.getElementById('votingArea').style.display = 'none';
+                    document.getElementById('alert').style.display = 'none';
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                    currentUser = null;
+                }, 3000); // Wait for 3 seconds before showing login area
             }
         }
 
+        function updateAdminView() {
+            const tbody = document.querySelector('#votesTable tbody');
+            tbody.innerHTML = '';
+            allVotes.forEach(vote => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${vote.username}</td>
+                    <td>${vote.position}</td>
+                    <td>${vote.vote}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            createVotingCards();
-            document.getElementById('votingArea').addEventListener('click', handleVote);
+            document.getElementById('loginButton').addEventListener('click', login);
+            document.getElementById('positions').addEventListener('click', handleVote);
             document.getElementById('submitButton').addEventListener('click', handleSubmit);
         });
     </script>
