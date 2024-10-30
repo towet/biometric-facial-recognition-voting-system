@@ -48,22 +48,36 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 10px;
         }
 
-        .login-button {
+        .login-button, .admin-button {
             padding: 10px 20px;
             font-size: 1rem;
             color: white;
-            background-color: #10b981; /* Green color */
             border: none;
             border-radius: 25px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
+        .login-button {
+            background-color: #10b981; /* Green color */
+        }
+
         .login-button:hover {
             background-color: #3b82f6; /* Blue color on hover */
             transform: scale(1.05);
+        }
+
+        .admin-button {
+            background: linear-gradient(to right, #6366f1, #8b5cf6);
+        }
+
+        .admin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .background-animation {
@@ -183,6 +197,59 @@
                 font-size: 1.5rem;
             }
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 0.25rem;
+        }
+
+        .close-modal {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #a78bfa;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 0.75rem;
+            border: 1px solid #4a5568;
+            text-align: left;
+        }
+
+        .results-table th {
+            background-color: #4a5568;
+        }
     </style>
 </head>
 <body>
@@ -191,6 +258,10 @@
     <div class="background-animation"></div>
     <div class="login-container">
         <button class="login-button" onclick="redirectToLogin()">Login</button>
+        <button class="admin-button" onclick="showAdminModal()">
+            <i class="fas fa-user-shield"></i>
+            Admin Login
+        </button>
     </div>
     <div class="content">
         <h1> Biometric Authentication voting system </h1>
@@ -221,10 +292,90 @@
     <p>Develeped by <a href="#">frank.com</a>.</p>
 </footer>
 
+<!-- Admin Login Modal -->
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+        <h2>Admin Login</h2>
+        <input type="text" id="adminUsername" placeholder="Username">
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button class="next-button" onclick="adminLogin()">Login</button>
+    </div>
+</div>
+
 <script>
     function redirectToLogin() {
         window.location.href = '/login'; // Change this to your login URL
     }
+
+    function showAdminModal() {
+        document.getElementById('adminModal').style.display = 'flex';
+    }
+
+    function closeAdminModal() {
+        document.getElementById('adminModal').style.display = 'none';
+    }
+
+    function adminLogin() {
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+
+        if (username === 'admin' && password === 'admin123') {
+            showAdminResults();
+        } else {
+            alert('Invalid credentials');
+        }
+    }
+
+    function showAdminResults() {
+        const modalContent = document.querySelector('.modal-content');
+        let voteCounts = {};
+
+        // Example votes data (replace with actual data)
+        const allVotes = [
+            { position: 'Kubsa Chairperson', vote: 'John wayne' },
+            { position: 'Non resident', vote: 'Sarah mwaniki' },
+            { position: 'Secritary general', vote: 'David mwaura' },
+            { position: 'Kubsa Chairperson', vote: 'Jane wangari' },
+            { position: 'Non resident', vote: 'Tom Wilson' },
+            { position: 'Secritary general', vote: 'Lisa Chen khaliya' },
+        ];
+
+        // Count votes for each position and candidate
+        allVotes.forEach(vote => {
+            if (!voteCounts[vote.position]) {
+                voteCounts[vote.position] = {};
+            }
+            if (!voteCounts[vote.position][vote.vote]) {
+                voteCounts[vote.position][vote.vote] = 0;
+            }
+            voteCounts[vote.position][vote.vote]++;
+        });
+
+        // Create results HTML
+        let resultsHTML = '<h2>Voting Results</h2><table class="results-table"><thead><tr><th>Position</th><th>Candidate</th><th>Votes</th></tr></thead><tbody>';
+        
+        for (const position in voteCounts) {
+            for (const candidate in voteCounts[position]) {
+                resultsHTML += `
+                    <tr>
+                        <td>${position}</td>
+                        <td>${candidate}</td>
+                        <td>${voteCounts[position][candidate]}</td>
+                    </tr>
+                `;
+            }
+        }
+        
+        resultsHTML += '</tbody></table>';
+        modalContent.innerHTML = resultsHTML;
+    }
+
+    window.addEventListener('click', (event) => {
+        if (event.target === document.getElementById('adminModal')) {
+            closeAdminModal();
+        }
+    });
 </script>
 
 </body>

@@ -3,207 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decentralized Voting Platform</title>
+    <title>Voting System - Image Recognition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
     <style>
+        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1a202c;
-            color: white;
+            font-family: 'Montserrat', sans-serif;
             margin: 0;
             padding: 0;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: white;
+            overflow-x: hidden;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        h1 {
-            font-size: 2.5rem;
+
+        /* Header Styles */
+        header {
+            position: relative;
+            height: auto; /* Adjusted height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 4rem;
             background: linear-gradient(to right, #a78bfa, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-in-out forwards;
         }
-        .info-box {
-            background-color: #2d3748;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 2rem;
+
+        p {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            animation: fadeIn 1.5s ease-in-out forwards;
         }
-        .voting-card {
-            background: linear-gradient(to right, #6366f1, #8b5cf6, #d946ef);
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+
+        /* Login Button Styles for Top Right */
+        .login-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .login-button, .admin-button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .login-button {
+            background-color: #10b981; /* Green color */
+        }
+
+        .login-button:hover {
+            background-color: #3b82f6; /* Blue color on hover */
+            transform: scale(1.05);
+        }
+
+        .admin-button {
+            background: linear-gradient(to right, #6366f1, #8b5cf6);
+        }
+
+        .admin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background-image: url('https://source.unsplash.com/1600x900/?technology,voting');
+            background-size: cover; 
+            filter: blur(8px);
+            z-index: -1; /* Behind other elements */
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+          from {
+              opacity: 0; 
+              transform: translateY(-20px);
+          }
+          to {
+              opacity: 1; 
+              transform: translateY(0);
+          }
+        }
+
+        /* Footer Styles */
+        footer {
+          text-align: center; 
+          padding-top: 20px; 
+          font-size: .9rem; 
+          color: #ccc;
+        }
+
+        footer a {
+          color: #10b981; 
+          text-decoration: none;
+        }
+
+        footer a:hover {
+          text-decoration: underline;
+        }
+
+        /* Additional Sections */
+        .features {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .features p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
             transition: transform 0.3s ease;
         }
-        .voting-card:hover {
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+        }
+
+        /* Image Styles */
+        .header-image {
+            width: 100%;
+            max-width: 600px; /* Adjusted max-width */
+            height: auto; /* Maintain aspect ratio */
+            margin-top: 20px; /* Reduced margin */
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .header-image:hover {
             transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
-        .candidate-button {
-            display: block;
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+
+            p {
+                font-size: 1.2rem;
+            }
+
+            .features h2 {
+                font-size: 2rem;
+            }
+
+            .features p {
+                font-size: 1rem;
+            }
+
+            .feature-card h3 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 0.75rem 1rem;
-            margin-top: 0.5rem;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
             border: none;
             border-radius: 0.25rem;
-            background-color: rgba(139, 92, 246, 0.5);
-            color: white;
-            text-align: left;
+        }
+
+        .close-modal {
+            float: right;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            font-size: 1.5rem;
+            color: #a78bfa;
         }
-        .candidate-button:hover {
-            background-color: rgba(139, 92, 246, 0.75);
-        }
-        .candidate-button.selected {
-            background-color: white;
-            color: #6366f1;
-            font-weight: bold;
-        }
-        .submit-button {
-            display: block;
+
+        .results-table {
             width: 100%;
-            padding: 1rem;
-            margin-top: 2rem;
-            border: none;
-            border-radius: 0.25rem;
-            background: linear-gradient(to right, #10b981, #3b82f6);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.3s ease;
-        }
-        .submit-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .alert {
-            padding: 1rem;
-            border-radius: 0.25rem;
+            border-collapse: collapse;
             margin-top: 1rem;
         }
-        .alert-warning {
-            background-color: #fcd34d;
-            color: #92400e;
+
+        .results-table th,
+        .results-table td {
+            padding: 0.75rem;
+            border: 1px solid #4a5568;
+            text-align: left;
         }
-        .alert-success {
-            background-color: #10b981;
-            color: white;
-        }
-        .learn-more {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 2rem;
-            color: #a78bfa;
-            text-decoration: none;
-        }
-        .learn-more:hover {
-            text-decoration: underline;
+
+        .results-table th {
+            background-color: #4a5568;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Decentralized Voting Platform</h1>
-        
-        <div class="info-box">
-            <h2>How it works</h2>
-            <p>Select your preferred candidate for each position. Your votes will be securely stored on the blockchain, ensuring transparency and immutability.</p>
-        </div>
 
-        <div id="votingArea">
-            <!-- Voting cards will be inserted here by JavaScript -->
-        </div>
-        
-        <button id="submitButton" class="submit-button" disabled>Please vote for all positions</button>
-        
-        <div id="alert" class="alert" style="display: none;"></div>
-
-        <a href="#" class="learn-more">
-            <i class="fas fa-question-circle" style="margin-right: 0.5rem;"></i>
-            Learn more about blockchain voting
-        </a>
+<header>
+    <div class="background-animation"></div>
+    <div class="login-container">
+        <button class="login-button" onclick="redirectToLogin()">Login</button>
+        <button class="admin-button" onclick="showAdminModal()">
+            <i class="fas fa-user-shield"></i>
+            Admin Login
+        </button>
     </div>
+    <div class="content">
+        <h1> Biometric Authentication voting system </h1>
+        <p>Empowering democracy through advanced image recognition technology.</p>
+        <img src="/static/pic.jpeg" alt="Voting System Image" class="header-image">
+    </div>
+</header>
 
-    <script>
-        const positions = [
-            { id: 1, title: 'Kubsa Chairperson', candidates: ['John wayne', 'Jane wangari', 'Mike siema'] },
-            { id: 2, title: 'Non resident', candidates: ['Sarah mwaniki', 'Tom Wilson', 'Emily Davis'] },
-            { id: 3, title: 'Secritary general', candidates: ['David mwaura', 'Lisa Chen khaliya', 'Robert alayiTaylor'] },
+<section class="features">
+    <h2>Why Choose Our Voting System?</h2>
+    <p>Our system ensures secure, transparent, and efficient voting processes.</p>
+    <div class="feature-card">
+        <h3>Secure Authentication</h3>
+        <p>Utilizing cutting-edge image recognition to verify voter identities securely.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Transparent Process</h3>
+        <p>Every vote is recorded and verified, ensuring a transparent voting process.</p>
+    </div>
+    <div class="feature-card">
+        <h3>User-Friendly Interface</h3>
+        <p>Designed with the user in mind, making the voting process simple and intuitive.</p>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2024 Voting System. All rights reserved.</p>
+    <p>Develeped by <a href="#">frank.com</a>.</p>
+</footer>
+
+<!-- Admin Login Modal -->
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+        <h2>Admin Login</h2>
+        <input type="text" id="adminUsername" placeholder="Username">
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button class="next-button" onclick="adminLogin()">Login</button>
+    </div>
+</div>
+
+<script>
+    function redirectToLogin() {
+        window.location.href = '/login'; // Change this to your login URL
+    }
+
+    function showAdminModal() {
+        document.getElementById('adminModal').style.display = 'flex';
+    }
+
+    function closeAdminModal() {
+        document.getElementById('adminModal').style.display = 'none';
+    }
+
+    function adminLogin() {
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+
+        if (username === 'admin' && password === 'admin123') {
+            showAdminResults();
+        } else {
+            alert('Invalid credentials');
+        }
+    }
+
+    function showAdminResults() {
+        const modalContent = document.querySelector('.modal-content');
+        let voteCounts = {};
+
+        // Example votes data (replace with actual data)
+        const allVotes = [
+            { position: 'Kubsa Chairperson', vote: 'John wayne' },
+            { position: 'Non resident', vote: 'Sarah mwaniki' },
+            { position: 'Secritary general', vote: 'David mwaura' },
+            { position: 'Kubsa Chairperson', vote: 'Jane wangari' },
+            { position: 'Non resident', vote: 'Tom Wilson' },
+            { position: 'Secritary general', vote: 'Lisa Chen khaliya' },
         ];
 
-        let votes = {};
-
-        function createVotingCards() {
-            const votingArea = document.getElementById('votingArea');
-            positions.forEach(position => {
-                const card = document.createElement('div');
-                card.className = 'voting-card';
-                card.innerHTML = `
-                    <h3>${position.title}</h3>
-                    ${position.candidates.map(candidate => `
-                        <button class="candidate-button" data-position="${position.id}" data-candidate="${candidate}">
-                            <i class="fas fa-user" style="margin-right: 0.5rem;"></i>
-                            ${candidate}
-                        </button>
-                    `).join('')}
-                `;
-                votingArea.appendChild(card);
-            });
-        }
-
-        function handleVote(event) {
-            if (event.target.classList.contains('candidate-button')) {
-                const positionId = event.target.dataset.position;
-                const candidate = event.target.dataset.candidate;
-                votes[positionId] = candidate;
-
-                // Update button styles
-                document.querySelectorAll(`[data-position="${positionId}"]`).forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                event.target.classList.add('selected');
-
-                updateSubmitButton();
+        // Count votes for each position and candidate
+        allVotes.forEach(vote => {
+            if (!voteCounts[vote.position]) {
+                voteCounts[vote.position] = {};
             }
-        }
-
-        function updateSubmitButton() {
-            const submitButton = document.getElementById('submitButton');
-            if (Object.keys(votes).length === positions.length) {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Confirm Votes on Blockchain';
-            } else {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Please vote for all positions';
+            if (!voteCounts[vote.position][vote.vote]) {
+                voteCounts[vote.position][vote.vote] = 0;
             }
-        }
-
-        function handleSubmit() {
-            if (Object.keys(votes).length === positions.length) {
-                // Here you would typically send the votes to your Flask backend
-                console.log('Votes submitted:', votes);
-                
-                const alert = document.getElementById('alert');
-                alert.className = 'alert alert-success';
-                alert.textContent = 'Your votes have been securely recorded on the blockchain. Thank you for participating in this decentralized decision-making process!';
-                alert.style.display = 'block';
-
-                document.getElementById('votingArea').style.display = 'none';
-                document.getElementById('submitButton').style.display = 'none';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            createVotingCards();
-            document.getElementById('votingArea').addEventListener('click', handleVote);
-            document.getElementById('submitButton').addEventListener('click', handleSubmit);
+            voteCounts[vote.position][vote.vote]++;
         });
-    </script>
+
+        // Create results HTML
+        let resultsHTML = '<h2>Voting Results</h2><table class="results-table"><thead><tr><th>Position</th><th>Candidate</th><th>Votes</th></tr></thead><tbody>';
+        
+        for (const position in voteCounts) {
+            for (const candidate in voteCounts[position]) {
+                resultsHTML += `
+                    <tr>
+                        <td>${position}</td>
+                        <td>${candidate}</td>
+                        <td>${voteCounts[position][candidate]}</td>
+                    </tr>
+                `;
+            }
+        }
+        
+        resultsHTML += '</tbody></table>';
+        modalContent.innerHTML = resultsHTML;
+    }
+
+    window.addEventListener('click', (event) => {
+        if (event.target === document.getElementById('adminModal')) {
+            closeAdminModal();
+        }
+    });
+</script>
+
 </body>
 </html>
